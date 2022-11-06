@@ -1,0 +1,34 @@
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-service
+spec: # Especificação geral
+  selector:
+    app: flask-app
+  ports:
+    - protocol: 'TCP'
+      port: 5000
+      targetPort: 5000
+  type: LoadBalancer
+
+--- # Sepração
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app-deployment
+spec: # Especificação geral
+  replicas: 4
+  selector:
+    matchLabels:
+      app: flask-app
+  template: # Aplicativo
+    metadata:
+      labels:
+        app: flask-app
+    spec: # Especificação do aplicativo
+      containers:
+        - name: flask
+          image: lucasmacedo456/flask-kub-projeto:2

@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app-deployment
+spec: # Especificação geral
+  replicas: 4
+  selector:
+    matchLabels:
+      app: flask-app
+  template: # Aplicativo
+    metadata:
+      labels:
+        app: flask-app
+    spec: # Especificação do aplicativo
+      containers:
+        - name: flask
+          image: lucasmacedo456/flask-kub-projeto:2

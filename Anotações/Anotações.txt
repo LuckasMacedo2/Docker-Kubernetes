@@ -1,0 +1,624 @@
+Container = máquina que rodará o projeto
+Imagem = projeto
+Volumes = Guarda dados / arquivos
+	Bind mount -> guardar na máquina
+Network = conectar entre containers
+YAML = 
+Compose = rodar o docker, controle de containers e imagens a partir de arquivos de composição
+Docker swarm e Kubernetes = fazem a mesma coisa. Ambas fazem orquestração de containers.
+	Docker swarm
+
+-----------------------------------------------------------------------------------------------------
+Docker
+	Reduz a complexidade do setup de uma aplicação
+	Proporciona mais velocidade na configuração do ambiente de um Dev
+	Pouco tempo gasto em manutenção	
+	Permite criar ambientes idependentes e que funcionem em diversos SOs.
+	Melhora a performance os projetos
+	Os containers ficam isolados
+	Containers são descartados
+	Ganha confiabilidade
+	Ambiente limpo
+
+Matrix from hell
+	Configurações em muitos computadores diferentes
+	Evitar que fique configurando diversos projetos diferentes
+	
+Diferença entre as versões do docker
+	CE -> comunity edition
+	EE -> enterprise edition
+
+Docker desktop -> interface para trabalhar com o docker
+
+Extensão do docker: Docker
+
+Alternativa do terminal do windows -> cmder, exxecutar comandos linux no windows
+
+** Imagens rodam em containers **
+
+-----------------------------------------------------------------------------------------------------
+Containers
+	Pacote de código que pode executar uma aplicação	
+	Um container não pode ser executado sem uma imagem
+	Um container = uma responsabilidade
+
+	Container x imagem	
+		São recursos do docker
+		Imagem é o projeto que será executado pelo container
+		Container = docker rodando uma imagem, excuta passos para que a aplicação rode a partir de um container
+		Imagens são encontradas no docker.hub
+
+	Container x VM
+		Container é uma aplicação que serve para um detecminado VM. Gastam menos recursos
+		VM pode executar diversas funções ao mesmo tempo. Gastam mais recursos
+
+	Executar container em background
+		flag -d
+
+	Expondo uma porta
+		Containers não tem conexão com nada de fora deles
+		flag -d expoe uma porta
+		dcker run -p portaASerExposta : portaRefletidaNoContainer
+
+	Parando containers
+		Eles podem ser parados pelo ID ou pelo seu nome
+		Ao executar o comando stop o container fica parado, mas não foi excluído
+
+	Iniciando um container	
+		docker start id / nome -> inicia um container
+		* run sempre cria um novo container
+
+	Criando nomes de um container
+		Utiliza a flag --name
+		Não colocada recebe um nome aleatório
+
+	Logs de um container
+		Ver os Logs do container
+		docker logs id -> mostrar os logs de um container
+
+	Removendo containers
+		docker -rm id / nome do container -> remove o container
+		flag -f força a remoção de um container que está executando
+
+	Imagem
+		São originadas de arquivos que programamos
+		Ao rodar um container baseado na imagem, as instruções serão executadas em camadas
+			Cada linha na imagem é uma camada
+			Ao alterar uma linha, somente as linhas abaixo da linha que foi alterada que serão reexecutadas
+	
+	Criando uma imagem
+		Usa um arquivo Dockerfile. 
+		Cria cache
+		Expressões:
+			FROM: imagem base;
+			WORKDIR: diretório da aplicação;
+			EXPOSE: porta da aplicação;
+			COPY: quais arquivos devem ser copiados.
+			CMD: executar comandos, recebe os comandos em lista
+		Criar o arquivo dockerfile e executar o comando build
+		Rodar o comando com o docker run
+
+		Sempre que o código de uma imagem for alterada deve ser realizado o build
+		O docker entende como uma nova imagem
+
+		Cache em camadas	
+			No docker as imagens são divididas em camadas (layers)
+			Cada instrução no dockerfile representa uma layers
+			Quando algo é atualizado apenas as layers depois da linha atualizada s~~ao refeitas
+			O resto fica em cache, para tornar o build mais rápido
+	
+	Realizando o download de uma imagem
+		docker pull nome_imagem
+		Faz o download de uma imagem que será utilizada posteriormente
+
+	Multiplas aplicações, mesmo container	
+		Vários containers com uma mesma imagem
+
+	Alterando o nome da imagem e tag
+
+	Copiando arquivos entre Containers
+		docker cp
+
+	Atualizando uma imagem no hub
+		Para enviar uma atualização, deve-se primeiro realizar o build
+		Trocar a tag da imagem para a versão atualizada
+		Depois fazer um push novamente para o repositório
+
+	Volumes -> persistir dados
+		Salvar dados fora do container do Docker	
+		Forma para guardar dados
+		Guardar dados desacoplado do container
+
+		Tipos de Volumes
+			Anônimos (anonymous): diretórios criados pela tag -v, porém possui um nome aleatório;
+				docker run -v /data -> cria um volume anônimo para salvar os dados
+			Nomeados (named): volumes com nome, podemos nos referir a eles facilmente e saber para que são utilizados no ambiente;
+				docker run -v nomeVolume:/data -> cria um volume nomeado para salvar os dados
+			Bind mounts: Forma de salvar os dados na máquina, sem o gerenciamento do docker, deve-se informar um diretório para esse fim.
+				Salva fora do docker
+				Um dir com os dados a serem salvos
+				Fica num diretório da máquina host
+				docker run /dir/data:/data -> cria um diretório bind mount
+				Pode ser utilzadoo para atualização em tempo real em tempo real do projeto
+		As vezes salva os dados no próprio do container. Com isso, ao remover o container os arquivos não são encontrados
+
+	Networks
+		Permite conectar dois ou mais containers
+		Forma de gerenciar a conexão do docker com outras palataformas ou entre outros containers
+		Criadas separadamente dos containers
+		A forma mais comum é o Bridge
+		Tipos de conexão
+			Externa: conexão com uma API e um servidor remoto
+			Com o host: comunicação entre o docker e a máquina que está executando o docker
+			Em containers: comunicação que utiliza o driver bridge e permite a comunicação entre dois ou mais containers
+		Tipos de rede (drivers)
+			Bridge: mais comum e default do docker, utilizado quando containers precisam se conectar;
+			Host: permite a conexão entre um container a máqioma que está hosteando o docker;
+				container + máquina host
+			macvlan: permite a conexão a um container por um MAC address;
+			none (null): remove todas conexões de rede de um Container;
+			plugins: permite extensões de terceiros para criar outras redes.
+				permite intalar drivers de terceiros para simular uma rede
+			O docker já cria algumas redes
+		Criar uma rede
+		Conexão entre containers
+		Conectando a mais de uma rede
+
+	YAML
+		Linguagem de serialização / configuração
+		Facilita a criação de compose
+		extensão: yml ou ymal
+		Os dados são colocados como chave: valor
+		O fim de uma linha indica um fim de uma instrução
+		A identação deve conter um ou mais espaços, não deve-se utilizar o tab
+		Cada linha define um novo bloco
+		Colocar assim, cria um objeto (a identação é realizada por dois espaços):
+			obj:
+			  versao: 2
+			  arquivo: "teste.txt"
+		Comentários com #
+		Dados númericos
+			Inteiros e float
+		Strings
+			Dados que representam textos, pode ser inserido com e sem aspas
+		Valores nulos
+			Valores vazios: ~ ou null
+			Resulta em None
+		Booleanos
+			True e On = verdadeiro
+			False e Off = falso
+		Arrays
+			[item1, item2, item3, ...]
+			ou
+			- item1
+			- item2
+			- item3
+			...
+		Dicionários
+			Possuem chave e valor
+			obj: {a: 1, b: 2}
+			ou 
+			obj:
+				chave: valor
+				chave2: valor2
+
+	Docker compose
+		Gerir tudo em um só arquivo
+		Ferramenta para rodar múltiplos containers
+		Facilita a execução de múltplos runs e builds
+		Permite definir uma ordem ao qual os projetos subiram
+		Arquivos do compose
+			Coordena os containers e imagens
+			Version = versão do compose
+			Services = containers/serviços que vão rodar nessa aplicação
+			Volumes = Possível adição de volumes
+		** No compose já existe uma rede bridge **
+		Para rodar o compose executar:
+			docker compose up -> executar o compose
+			docker compose up -d -> executar o compose em modo detacched
+			docker compose down -> para o compose
+		Variaveis de ambiente
+			Permite definir variaveis de ambiente para o docker compose
+			Deve-se definir um arquivo base env_file
+			Util para projetos compartilhados
+			precisa ter a extensão .env
+			No compose é determinado pela chave env_file
+		Redes
+			Por padrão vem um rede bridge
+			A chave network permite criar uma rede
+		Build de imagens
+			Permitir gerar o build de imagens
+		Volume bind mount 
+			Permite a atualização em tempo real dos arquivos
+	
+	-- Na pasta do compose > projeto -> é necessário buildar cada imagem antes
+
+	Docker swarm
+		Forma de osquestrar containers
+		Forma simples de gerenciar máquinas de um mesmo projeto
+		Swarm permite gerenciar e escalar os containers
+		É um serviço que rege sobre outros serviços
+		Busca tornar uma aplicação saudável e também que esteja sempre disponível
+		Swarm -> orquestrar containers, escalar horizontalmente, cluster, comandos semelhantes ao docker
+			O docker já vem com o swarm, mas desabilitado
+		Conceitos:
+			Nodes = instância (máquina) que participa do swarm. Cada instância
+			Manage node = node que gerencia os demais nodes. Gerencia os demais nodes
+			Worker node = nodes que trabalham em função do manager. Só executa o que é mandado
+			Service = conjunto de tasks que o manager node manda o work node executar. Tarefas que seram executadas para os workers
+			Task = comandos que são executados nos nodes. 
+		Poder ser criado na aws ou docker labs
+			https://labs.play-with-docker.com/
+		Docker labs
+			crtl + insert -> copia
+			ctrl + shift + v -> cola
+			docker swarm init --advertice-addr 192.168.0.28 -> iniciar o swarm
+				Inicia o swarm e transforma a máquina em manager
+			docker swarm join --token token 192.168.0.28:2377
+			Adicionar o master depois pegar o comando acima e rodar nas outras máquinas
+
+			docker service create --name nome imagem - > inicia um serviço
+
+			Apenas o manager tem acesso a comandos
+			O manager busca garantir que os serviços estejam sempre disponíveis
+		Redes em swarm
+			docker network create nome_rede -> cria uma rede
+			O driver padrão é o overlay
+			Permite isolar services
+			No serviço é necessário utilizar a flag --network para conectar o service na rede
+			
+		** Portas: SSH = 22, HTTP = 80, TCP = customizada **
+	
+	Kubernetes
+		Ferramenta de orquestração de containers
+		Permite a criação de múltiplos containers em diferentes máquinas (nodes) - máquina
+		Permite a criação de clusters
+		Conceitos:
+			Control plane: Onde é gerenciado o controle dos processos dos nodes;
+				Máquina que gerencia os outros nodes
+				Master, server principal
+			Nodes: Máquinas que são gerenciadas pelo Control plane;
+			Deployment: A execução de uma imagem/projeto em um pode;
+				Container run
+				Deve-se rodar pimeiramente o Deployment de um projeto
+			Pod: Um ou mais containers que estão em um Node;
+				Máquina isolada
+				São replicaveis
+				Execução de fato do projeto
+			Services: Serviços que expõe os Pods ao mundo externo;
+				Expõe os containers para o mundo externo
+				Disponibiliza a aplicação
+			Kubectl: Cliente de linha de comando para o Kubernetes.
+				Ferramenta para executar o kubernetes no terminal
+		Instalação:
+			client -> kuberctl
+			kubernetes
+			minikube -> simulador de várias máquinas
+			gerenciador de pacotes chocolatey
+			Iniciando o minikube
+			minikube start --driver=driver
+				drivers: virtualbox, hyperv e docker
+			minikube stop -> para o minukube
+			minikube status -> status do minikube
+			minikube dashboard -> Dashboard do minikube
+			minikube dashboard --url -> url dashboard do minikube
+		Deployment
+			Rodar a aplicação em um pod, é semelhante ao container run
+			Máquina que irá rodar o projeto
+			Necessário subir a imagem para o docker hub
+			Define que um projeto deve ser rodado em uma máquina
+			Deve-se definir uma imagem e um nome
+			docker build -t lucasmacedo456/flask-kub-projeto .
+			docker run -d -p 5000:5000 --name flask-kub --rm lucasmacedo456/flask-kub-projeto
+			docker push lucasmacedo456/flask-kub-projeto
+
+			kubectl create deployment flas-deployment --image=lucasmacedo456/flask-kub-projeto
+			kubectl get deployments -> obter informações do deployment
+			kubectl describe deployments -> obter informações do deployment
+			kubectl get pods -> obter informações de pods
+			kubectl describe pods -> obter informações de pods
+			kubectl config view -> verificar as configurações de como o kubernetes foi criado
+
+		Services
+			As aplicações do kubernetes não tem conexão com o mundo externo
+			O service expõe os pods
+			Pods são criados para serem destruídos
+			Service é uma entidade separada dos Pods
+			É necessário gerar um ip para o kubernetes para executar no minikube
+
+			kubectl expose deployment nome --type=tipo --port=porta	
+				Tipo mais comum é o LoadBalancer
+			minikube service nome -> gera o ip e abre no navegador
+				minikube service flas-deployment
+			kubectl get services -> obter detalhes dos serviços
+			kubectl describe services/nome -> obtém informações de um serviço especifico
+
+		--
+		Replicar a aplicação
+			kubectl scale deployment/nome --replicas=numero_replicas -> escala a aplicação aumentando o número de replicas
+				kubectl scale deployment/flas-deployment --replicas=5
+				Também é utilizado o comando para diminuir o número de replicas
+			kubectl get rs -> verificar o número de replicas
+			kubctl set image deployment/nome nome_container=nova_imagem -> atualizar a imagem
+		
+		Desfazer alteração
+			kubectl rollout status deployment/nome -> Status de uma atualização
+			kubectl rollout undo deployment/nome -> Desfaz uma alteração
+		
+		Deletar um serviço	
+			kubectl delete service nome -> deleta um serviço, com isso a aplicação não ficará mais disponível
+		
+		Deletar um deployment
+			kubectl delete deployment nome -> deleta o container
+
+		Modo impertativo -> provê comandos para o kubernetes e espera respotas dele
+			A aplicação é iniciada com comandos
+		
+		Modo declarativo
+		Modo declarativo -> guiada por um arquivo, docker compose
+			Centraliza tudo em um comando
+			Também é escrito em YAML
+			Chaves mais utilizadas	
+				apiVersion = versão utilizada da ferramenta
+				kind = tipo do arquivo (deployment/service)
+				metadata = descrever algum objeto, inserindo chaves como name
+				replicas = número de replicas de Nodes/Pods
+				containers = definir as especificações de containers como: nome e imagem
+			Criar deployment
+			kubectl apply -f arquivo -> executa o arquivo yaml para rodar o kubernetes em modo declarativo
+			kubectl delete -f arquivo -> Deleta o deployment
+			Criar service
+			kubectl apply -f .\flask-service.yaml -> criar o service
+			minikube service flask-service -> gerar o ip de acesso 
+			Parar o serviço
+			kubectl delete -f nome_arquivo -> para o serviço
+			É possível unir os dois arquivos de deployment service e o deployment com a separação por: ---
+				É comum colocar o service antes do deployment
+	
+	Linux
+	Terminal
+		Ao executar um comando no terminal o shell executa e retorna a instrução.
+		O terminal é uma janela para executar o shell
+		Sintaxe básica
+			COMANDO -OPCOES ARQUIVOS/DIRETORIOS
+	Estrutura de diretórios do linux
+	diretorio = pasta com arquivos
+	No linux o diretorio raiz (/) é a base
+		bin -> contém arquivos binários para executar programas
+		boot -> arquivos que auxiliam na inicialização do sistema
+		dev -> arquivos que representam driver
+		etc -> arquivo de configuração		
+		home -> diretorio com todos os usuários
+		lib -> arquivos de biblioteca utilizadas por vários aplicativos
+		media -> apresenta pastas de dispositivos montados no pc, como, um pen drive
+		opt -> aplicativos de terceiros
+		sbin -> arquivos binários de inicialização de sitema
+		tmp -> arquivos que são descartaveis
+		usr -> arquivos guardados em modo leitura
+		var -> arquivos de log
+	Comandos
+		--
+		cd -> change directory, muda o diretório
+			cd .. -> volta um diretório
+				cd ../../../
+			cd - -> volta para o diretório anterior que estava sendo trabalhado
+			cd ~ -> vai para a home do usuário
+		--
+		ls -> lista arquivos e diretórios
+		ls -l -> mostra todos os arquivos e pastas com detalhes
+		ls -a -> lista arquivos e pastas, além de arquivos ocultos
+		ls -lh -> mostra o tamanho dos arquivos em formato readable
+		ls -ltr -> mostrar a daa de modificação dos arquivos
+		ls -lr -> lista os arquivos em ordem reversa
+		ls -R -> mostra os subdiretorios e arquivos de cada pasta
+		ls -lS -> ordenar pelo tamanho do arquivo
+		ls -m -> separa os arquivos e diretórios por vírgula
+		--
+		clear -> limpa o terminal
+		--
+		cat -> cria arquivo ou vê o contéudo de um arquivo
+		cat arquivo -> lê o arquivo
+		cat conteudo > arquivo -> salva o conteúdo no arquivo
+		cat -n arquivo -> mostra o número das linhas na tela
+		cat -e arquivo -> mostra os finais de linha com um $
+		cat conteudo >> arquivo -> concatena o conteúdo no final do arquivo
+		--
+		touch -> cria um arquivo e permite mudar a data de atualização de um arquivo
+		touch arquivo -> cria o arquivo
+		--
+		man -> manual do sistema, mostra todos os possíveis parâmetros de um comando
+
+		ctrl + r -> procurar por um comando mais antigo 
+
+		Concatenando comandos
+			cd etc && ls -> concatena comandos
+
+
+
+docker run -d -p 3306:3306 --name mysql_api_cotainer --rm --network flasknetwork -e MYSQL_ALLOW_EMPTY_PASSWORD=True mysqlapinetwork
+
+-----------------------------------------------------------------------------------------------------
+Comandos
+	docker run imagem -> roda um container com a imagem definida
+		* run sempre cria um novo container
+		Ex.: docker run docker/whalesay cowsay Hello_World	
+	docker run -it ubuntu -> executar o terminal de comando do ubuntu
+	docker ps -> verificar se o container está rodando ou não
+	docker container ls -> Mostra os containers que estão sendo executados
+	docker ps -a -> mostra todos os conainers rodaram e que já rodaram
+	docker stop nome_container / id do container -> parar um container
+	docker run -d nome_container -> toda um container em background
+	docker start id / nome -> inicia um container
+	docker logs id -> mostrar os logs de um container
+	docker rm id / nome do container -> remove o container
+	docker rm id / nome do container -f -> força a remoção de um container que está em execução
+	docker pull nome_imagem -> realiza o download de uma imagem
+	docker tag id nome_imagem -> renomear a imagem
+	docker build -t nome_imagem:tag -> buildar uma imagem com um nome e uma tag
+	docker start -it container -> roda a imagem em imagem iterativo  
+	docker rmi imagem -> remove uma imagem
+	docker system prune -> remove tudo que não está sendo utilizado
+	docker run --rm container -> remove o container após ele ser parado 
+	docker top container -> informações do container
+	docker inspect container -> mostra informações de configuração do container
+	docker stats -> ver o andamento do processamento e memória gasta pelo docker
+	docker login -> faz o login no docker hub
+	docker logout -> faz o logout do docker hub
+	docker push imagem -> realiza o upload da imagem
+		Primeiro deve-se criar um repositório no docker hub. Também deve-se estar autenticado
+	docker run -v /data -> cria um volume anônimo para salvar os dados
+	docker volume ls -> lista os volumes
+	docker run -v nomeVolume:/data -> cria um volume nomeado para salvar os dados
+		data tem que ser o mesmo da workdir
+	docker run /dir/data:/data -> cria um diretório bind mount
+		Em diretórios com espaço colocar aspas no inicio e fim do nome
+	docker volume create nome_volume -> criar um volume. Cria um volume nomeado
+	docker volume ls -> lista todos os volumes presentes, se estiver sendo utilizados ou não. 
+		Bind mounts não são considerados, pois são de responsabilidade da máquina host
+	docker volume inspect nome -> verificar os detalhes de um volume especifico
+		Local em que o volume guarda os dados
+	docker volume rm nome_volume -> remove o volume e os arquivos do mesmo
+	docker volume prune -> remove os volumes não utilizados
+	docker run -v volume:/data:ro -> cria um volume apenas de leitura
+		:ro abreviatura de read only -> somente leitura
+	docker network ls -> listar as redes
+	docker network create nome_rede -> cria uma rede, por padrão o padrão criado é o tipo bridge
+	docker network create -d driver nome_rede -> cria uma rede especificando o driver
+	docker network rm nome_rede -> remove uma rede
+	docker network prune -> remove as redes que não estão sendo utilizadas
+	docker network connect rede container -> conectar uma rede a um container
+	docker network disconnect rede container -> desconectar uma rede a um container
+
+	** prune -> remove algo que não está sendo utilizado no momento 
+		docker system prune
+		docker network prune
+		docker volume prune
+	**
+	Flags
+	-a -> mostra todos os containers
+	-d -> especificar o driver da rede
+	-it -> acessar o terminal iterativo do container
+	-d -> roda o container em background, dettached
+	-p portaASerExposta : portaRefletidaNoContainer -> expoe uma porta
+	--name -> definir um nome para um container
+	-f (logs) -> follow fica mostrar os logs o tempo todo
+	-f (remoção) -> força a remoção de um container que está executando
+	--help -> ver os comandos do docker
+	--rm -> remove o container após o fim de sua execução
+
+	Compose
+	docker compose up -> executar o compose
+	docker compose up -d -> executar o compose em modo detacched
+	docker compose down -> para o compose
+	docker compose ps -> verifica os serviços executados no compose
+
+	Swarm
+	docker swarm init --advertice-addr 192.168.0.28 -> iniciar o swarm
+	docker swarm leave -> sai do swarm
+		A instância não é contada como um node para o swarm
+		O container parará de rodar, caso esteja rodando
+	docker swarm leave -f -> força a saída do swarm
+	docker node ls -> listar os nodes
+	docker swarm join --token token ip:porta -> adicionar novos nodes
+	docker service create --name nome imagem - > inicia um serviço
+	docker service ls -> mostra os serviços que estão sendo executados
+	docker service rm nome -> remove o serviço. Pode significar também parar um container que está rodando
+	docker service create --name nome --replicas numero_replicas  nome imagem -> aumentando o número de replicas. Uma task é emitida replicando o serviço nos workers
+	docker container rm 19c -f -> parar um container. Depois o manager sobe ele de novo
+	docker swarm join-token manager -> obter o token do manager para conectar outros workers
+	docker info -> obter informações sobre o swarm
+	docker node rm id -> remove um node
+		Ao remover e reiniciar o node pode ser que o node fique com o status = down. Para resolver este problema é necessário recriar toda a estrutura
+	docker service inspect id -> inspecionar um serviço especifico
+	docker service ps id -> mostra os containers que estão rodando em um serviço
+	docker stack deploy -c arquivo.yml nome -> rodar o compose com o swarm
+	docker service scale nome = numero de replicas -> escalar um projeto para outras replicas. Replica o serviço para outras máquinas 
+	docker node update --availability drain id -> fazer um serviço não receber mais tasks
+		Para que ele receb novas tasks é necessário mudar seu status para active
+	docker service update --imagem imagem service -> atualiza uma imagem. Apenas nodes com status = active receberam a atualização
+	docker network create nome_rede -> cria uma rede
+	docker service update --network rede nome -> atualiza o worker para conectar a uma rede
+
+	Minikube
+	minikube start --driver=driver
+		drivers: virtualbox, hyperv e docker
+	minikube stop -> para o minukube
+	minikube status -> status do minikube
+	minikube dashboard -> Dashboard do minikube
+	minikube dashboard --url -> url dashboard do minikube
+
+	Kubectl
+	Deployment
+	kubectl create deployment flas-deployment --image=lucasmacedo456/flask-kub-projeto
+	kubectl get deployments -> obter informações do deployment
+	kubectl describe deployments -> obter informações do deployment
+	kubectl get pods -> obter informações de pods
+	kubectl describe pods -> obter informações de pods
+	kubectl config view -> verificar as configurações de como o kubernetes foi criado
+	Services
+	kubectl expose deployment nome --type=tipo --port=porta	
+	Tipo mais comum é o LoadBalancer
+	minikube service nome -> gera o ip e abre no navegador
+		minikube service flas-deployment
+	kubectl get services -> obter detalhes dos serviços
+	kubectl describe services/nome -> obtém informações de um serviço especifico
+	Replicar a aplicação
+	kubectl scale deployment/nome --replicas=numero_replicas -> escala a aplicação aumentando o número de replicas
+		kubectl scale deployment/flas-deployment --replicas=5
+	kubectl get rs -> verificar o número de replicas
+	kubctl set image deployment/nome nome_container=nova_imagem -> atualizar a imagem		
+	Desfazer alteração
+	kubectl rollout status deployment/nome -> Status de uma atualização
+	kubectl rollout undo deployment/nome -> Desfaz uma alteração		
+	Deletar um serviço	
+	kubectl delete service nome -> deleta um serviço, com isso a aplicação não ficará mais disponível		
+	Deletar um deployment
+	kubectl delete deployment nome -> deleta o container
+	Modo declarativo / Criar deployment
+	kubectl apply -f arquivo -> executa o arquivo yaml para rodar o kubernetes em modo declarativo
+	kubectl delete -f arquivo -> Deleta o deployment
+	Modo declarativo
+	Criar deployment
+	kubectl apply -f arquivo -> executa o arquivo yaml para rodar o kubernetes em modo declarativo
+	kubectl delete -f arquivo -> Deleta o deployment
+	Criar service
+	kubectl apply -f .\flask-service.yaml -> criar o service
+	minikube service flask-service -> gerar o ip de acesso 
+	Parar o serviço
+	kubectl delete -f nome_arquivo -> para o serviço
+
+	Linux
+	--
+	cd -> change directory, muda o diretório
+		cd .. -> volta um diretório
+			cd ../../../
+		cd - -> volta para o diretório anterior que estava sendo trabalhado
+		cd ~ -> vai para a home do usuário
+	--
+	ls -> lista arquivos e diretórios
+	ls -l -> mostra todos os arquivos e pastas com detalhes
+	ls -a -> lista arquivos e pastas, além de arquivos ocultos
+	ls -lh -> mostra o tamanho dos arquivos em formato readable
+	ls -ltr -> mostrar a daa de modificação dos arquivos
+	ls -lr -> lista os arquivos em ordem reversa
+	ls -R -> mostra os subdiretorios e arquivos de cada pasta
+	ls -lS -> ordenar pelo tamanho do arquivo
+	ls -m -> separa os arquivos e diretórios por vírgula
+	--
+	clear -> limpa o terminal
+	--
+	cat -> cria arquivo ou vê o contéudo de um arquivo
+	cat arquivo -> lê o arquivo
+	cat conteudo > arquivo -> salva o conteúdo no arquivo
+	cat -n arquivo -> mostra o número das linhas na tela
+	cat -e arquivo -> mostra os finais de linha com um $
+	cat conteudo >> arquivo -> concatena o conteúdo no final do arquivo
+	--
+	touch -> cria um arquivo e permite mudar a data de atualização de um arquivo
+	touch arquivo -> cria o arquivo
+	--
+	man -> manual do sistema, mostra todos os possíveis parâmetros de um comando
+
+
+Links:
+	https://github.com/matheusbattisti/curso_docker

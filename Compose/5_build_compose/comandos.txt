@@ -1,0 +1,2 @@
+docker build -t mysqlcompose .
+docker build -t flaskcompose .
